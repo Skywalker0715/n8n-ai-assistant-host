@@ -1,0 +1,343 @@
+{
+  "name": "AI Assistant",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "39ab98b0-86f0-4c8d-8f16-54fc2cf0f7bf",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        60
+      ],
+      "webhookId": "86623974-8b30-41b4-9eb0-86b2e03aa002"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Kamu adalah asisten pribadi pintar yang bertugas membantu pengguna mengatur dan mengingat jadwal mereka.\n\nTugasmu:\n1. Analisis pesan pengguna dan tentukan niat mereka:\n   - Apakah ingin MENYIMPAN jadwal baru?\n   - Atau MENANYAKAN jadwal yang sudah ada?\n\n2. Jika pengguna ingin MENYIMPAN jadwal:\n   - Pastikan input berisi: **Nama**, **Deskripsi Kegiatan**, dan **Tanggal & Waktu**\n   - Format tanggal wajib: `YYYY-MM-DD HH:mm`\n   - Jika informasi lengkap, panggil tool:\n     ```\n     Simpan ke Google Sheets(\n       Nama=\"...\",\n       Jadwal=\"...\",\n       Tanggal=\"...\"\n     )\n     ```\n   - Lalu balas: \"Jadwal berhasil disimpan.\"\n\n3. Jika pengguna ingin MENANYAKAN jadwal:\n   - Ekstrak tanggal yang disebutkan\n   - Panggil tool:\n     ```\n     Baca Jadwal dari Google Sheets(\n       tanggal_cari=\"...\"\n     )\n     ```\n   - Lalu balas daftar kegiatan pada hari tersebut.\n\n4. Jika informasi kurang, balas:\n   \"Mohon lengkapi informasi berikut: [info yang kurang]\"\n\nContoh:\n- \"Nama saya Rendy. Jadwalkan meeting dengan Pak Budi tanggal 30 Juni 2025 jam 14.00\"\n  → Simpan ke Google Sheets(Nama=\"Rendy\", Jadwal=\"meeting dengan Pak Budi\", Tanggal=\"2025-06-30 14:00\")\n\n- \"Apa jadwal saya besok?\"\n  → Baca Jadwal dari Google Sheets(tanggal_cari=\"2025-06-30\")\natau tanggal_cari Sesuai Date & Time tools untuk menentukan tanggal yang dicari\n"
+        }
+      },
+      "id": "88033369-65d5-4cd4-a09f-5ca216745de8",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        840,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "id": "68079a95-a199-491e-86f8-3475aa8a100c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        720,
+        180
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zVVMASc0iZF6GcvG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw",
+          "mode": "list",
+          "cachedResultName": "Jadwal Assistant",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nama": "={{ $fromAI('Nama') }}",
+            "Jadwal": "={{ $fromAI('Jadwal') }}",
+            "Tanggal": "={{ $fromAI('Tanggal') }}"
+          },
+          "matchingColumns": [
+            "Nama"
+          ],
+          "schema": [
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Jadwal",
+              "displayName": "Jadwal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7bc97254-1fcf-4a13-908c-bcc0b94657fb",
+      "name": "Simpan ke Google Sheets",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4,
+      "position": [
+        1240,
+        220
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xDUxmoZRdKzATJkE",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw",
+          "mode": "list",
+          "cachedResultName": "Jadwal Assistant",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ows0C9tRiWGw3V-W302LfRpRYITtfXBiaBKrajjhXbw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "f86e0de9-9419-4f14-9df4-044073bad1ca",
+      "name": "Baca Jadwal dari Google Sheets",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4,
+      "position": [
+        1080,
+        240
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xDUxmoZRdKzATJkE",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "outputFieldName": "currentDateTime",
+        "options": {
+          "timezone": "Asia/Jakarta"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        900,
+        260
+      ],
+      "id": "81c09f3f-1715-4a6f-9cc1-13d32670fa7e",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        300,
+        20
+      ],
+      "id": "217a2983-6c88-47a6-9a9d-d5404b4a9bd6",
+      "name": "Telegram Trigger",
+      "webhookId": "ba021f08-5bcd-4b1f-a72e-f0b2d99c08c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "hHPrMsnIEUe5zyQu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"]}}",
+        "text": "={{$json[\"output\"] || $json[\"result\"] || $json[\"data\"] || \"Tidak ada respon dari AI Agent.\"}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        0
+      ],
+      "id": "f5dd7071-e41b-4f8f-b6da-31aafc9d916c",
+      "name": "Telegram",
+      "webhookId": "1b37857a-5ad9-4dfe-bde6-297b220d97f6",
+      "credentials": {
+        "telegramApi": {
+          "id": "hHPrMsnIEUe5zyQu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6ee4062c-7583-4857-a8e7-a7cf918e2fb4",
+              "name": "chatInput",
+              "value": "={{$json[\"message\"][\"text\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        580,
+        20
+      ],
+      "id": "f6ac01c0-8df3-4d5b-9fed-f773829d3c15",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simpan ke Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Jadwal dari Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "23c01b55-a010-4568-9416-cf54f3834af6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2095ab8022d886f533bbca2d46ef0f6ee9acb77e3cc2c079f6a4750f0b1ea2f6"
+  },
+  "id": "FDiMn8UbY1DxIMWD",
+  "tags": []
+}
