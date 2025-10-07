@@ -15,7 +15,7 @@ exec("npx n8n start", (err, stdout, stderr) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("n8n AI Assistant is running on Render!");
+  res.send("n8n AI Assistant is running on Railway!");
 });
 
 app.listen(port, () => {
